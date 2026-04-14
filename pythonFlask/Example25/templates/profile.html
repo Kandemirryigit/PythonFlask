@@ -1,0 +1,21 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% if user %}
+        <h1>{{ user["name"] }}</h1>
+        <p>Email: {{ user["email"] }}</p>
+        <p>ID: {{ user["id"] }}</p>
+    {% else %}
+        <p>User not found!</p>
+    {% endif %}
+
+    <br><br>
+    <a href="/users">turn back to list</a><br>
+    <a href="/">turn back to register screen</a>
+    
+</body>
+</html>

@@ -1,0 +1,23 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Add User</h1>
+
+    {% if error %}
+        <p style="color:red">{{error}}</p>
+    {% endif %}
+
+    <form method="POST">
+        <input name="name" placeholder="name"><br><br>
+        <input name="email" placeholder="email"><br><br>
+        <button type="submit">Add</button>
+    </form>
+
+
+    
+</body>
+</html>

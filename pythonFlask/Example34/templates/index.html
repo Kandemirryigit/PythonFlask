@@ -1,0 +1,264 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+</head>
+<body>
+
+    <div id="login-screen">
+        <h1>Login page</h1>
+        <input id="login-email" placeholder="email"><br><br>
+        <input id="login-password" type="password" placeholder="password"><br><br>
+        <button onclick="login()">Login</button>
+        <button onclick="showScreen('register-screen')">Register</button>
+        <p id="login-error" style="color:red"></p>
+    </div>
+
+    
+    <div id="register-screen">
+        <h1>Registration page</h1>
+        <input id="register-email" placeholder="email"><br><br>
+        <input id="register-password" type="password" placeholder="password"><br><br>
+        <button onclick="register()">Register</button>
+        <button onclick="showScreen('login-screen')">Login</button>
+        <p id="register-error" style="color:red"></p>
+    </div>
+
+
+    <div id="books-screen" style="display:none;">
+        <h1>My Library</h1>
+        <p id="user-email"></p>
+        <button onclick="exit()">Exit</button>
+
+        <hr>
+
+        <h2>Add Book</h2>
+        <input id="book-name" placeholder="book name"><br><br>
+        <input id="book-author" placeholder="author"><br><br>
+        <select id="book-point">
+            <option value="1">1 ⭐</option>
+            <option value="2">2 ⭐</option>
+            <option value="3">3 ⭐</option>
+            <option value="4">4 ⭐</option>
+            <option value="5">5 ⭐</option>
+        </select><br><br>
+        <button onclick="addBook()">Add</button>
+        <p id="book-error" style="color:red"></p>
+
+
+        <hr>
+
+        <h2>My Books</h2>
+        <div id="list-of-books"></div>
+
+    </div>
+
+
+
+
+   <div id="edit-form" style="display:none ;">
+    <h3>Update book</h3>
+    <input id="edit-name" placeholder="Book name"><br><br>
+    <input id="edit-author" placeholder="author"><br><br>
+    <select id="edit-point">
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐</option>
+        <option value="3">3 ⭐</option>
+        <option value="4">4 ⭐</option>
+        <option value="5">5 ⭐</option>
+    </select><br><br>
+    <button onclick="updateBook()">Update</button>
+    <button onclick="cancelEdit()">Cancel</button>
+    <p id="edit-error" style="color:red"></p>
+   </div> 
+
+
+
+
+
+
+
+   <script>
+    let editId=null;
+
+    async function start(){
+        const response=await fetch("/api/me");
+        const data=await response.json();
+
+        if(data.login){
+            document.getElementById("user-email").innerText=data.email;
+            showScreen("books-screen");
+            getBooks();
+        }
+        else{
+            showScreen("login-screen")
+        }
+    }
+
+
+
+    function showScreen(screenId){
+        document.getElementById("login-screen").style.display="none";
+        document.getElementById("register-screen").style.display="none";
+        document.getElementById("books-screen").style.display="none";
+        document.getElementById(screenId).style.display="block";
+    }
+
+
+    async function register(){
+        const email=document.getElementById("register-email").value;
+        const password=document.getElementById("register-password").value;
+
+        const response=await fetch("/api/register", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({email,password})
+        });
+
+        const data=await response.json();
+
+        if(response.ok){
+            showScreen("login-screen")
+        }
+        else{
+            document.getElementById("register-error").innerText=data.error;
+        }
+
+    }
+
+
+
+    async function login() {
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value;
+
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({email, password})
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById("user-email").innerText = data.email;
+            showScreen("books-screen");
+            getBooks();
+        } else {
+            document.getElementById("login-error").innerText = data.hata;
+        }
+    }
+
+
+    async function exit(){
+        await fetch("/api/exit",{method:"POST"});
+        showScreen("login-screen");
+    }
+
+
+
+    async function getBooks(){
+        const response=await fetch("/api/books");
+        const books=await response.json()
+
+        const list=document.getElementById("list-of-books");
+        list.innerHTML="";
+
+        if(books.length==0){
+            list.innerHTML="<p>You didnt add book</p>"
+            return;
+        }
+
+        books.forEach(book => {
+            list.innerHTML += `
+                <p>
+                    <b>${book.name}</b> — ${book.author} — ${book.point}⭐
+                    <button onclick="edit(${book.id}, '${book.name}', '${book.author}', ${book.point})">Edit</button>
+                    <button onclick="deleteBook(${book.id})">Delete</button>
+                </p>
+            `;
+        });
+
+    }
+
+
+
+    async function addBook() {
+        const name = document.getElementById("book-name").value;
+        const author = document.getElementById("book-author").value;
+        const point = parseInt(document.getElementById("book-point").value);
+
+        const response = await fetch("/api/books", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name, author, point})
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            document.getElementById("book-name").value = "";
+            document.getElementById("book-author").value = "";
+            document.getElementById("book-error").innerText = "";
+            getBooks();
+        } else {
+            document.getElementById("book-error").innerText = data.hata;
+        }
+    }
+
+
+
+
+    async function deleteBook(id) {
+        await fetch(`/api/books/${id}`, {method: "DELETE"});
+        getBooks();
+    }
+
+
+    function edit(id, name, author, point) {
+        editId = id;
+        document.getElementById("edit-name").value = name;
+        document.getElementById("edit-author").value = author;
+        document.getElementById("edit-point").value = point;
+        document.getElementById("edit-form").style.display = "block";
+    }
+
+
+    function cancelEdit(){
+        editId=null;
+        document.getElementById("edit-form").style.display="none";
+    }
+
+
+
+
+
+    async function updateBook() {
+        const name = document.getElementById("edit-name").value;
+        const author = document.getElementById("edit-author").value;
+        const point = parseInt(document.getElementById("edit-point").value);
+
+        const response = await fetch(`/api/books/${editId}`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name, author, point})
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            cancelEdit();
+            getBooks();
+        } else {
+            document.getElementById("edit-error").innerText = data.error;
+        }
+    }
+
+    start()
+
+   </script>
+
+
+</body>
+</html>

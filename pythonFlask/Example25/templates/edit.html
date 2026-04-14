@@ -1,0 +1,28 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User</title>
+</head>
+<body>
+    <h1>Edit User</h1>
+
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
+    {% endif %}
+
+
+    <form method="POST">
+        <input name="name" value="{{ user['name'] }}"><br><br>
+        <input name="email" value="{{ user['email'] }}"><br><br>
+        <button type="submit">Update</button> 
+    </form>
+
+    <br>
+    <a href="/users">Turn back to list</a>
+
+
+
+    
+</body>
+</html>
